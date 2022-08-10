@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # Mongodb
+  mongo_db:
+    container_name: database
+    image: mongo:latest
+    restart: always
+    ports:
+      - 27017:4000
+    volumes:
+      - mongo_db:/data/db
+  # Redis
+  redis:
+    container_name: redis_cache
+    image: redis:latest
+    restart: unless-stopped
+    network_mode: bridge
+    expose:
+      - 6379
+
+  # nodejs
+  api: 
+    container_name: backend
+    build: .
+    network_mode: bridge
+    ports:
+      - 2166:2166
+    links:
+      - redis
+    environment:
+      - PORT=2166
+      - TOKEN_KEY=SUPER_ULTRA_MEGA_SECRET_KEY
+      - MONGO=mongodb://mongo_db:27017/game-project
+    depends_on:
+      - mongo_db
+      - redis_cache
+
+volumes:
+  mongo_db: {}
